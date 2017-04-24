@@ -1,12 +1,12 @@
 /**
  * Copyright 2013 Joan Zapata
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.util.SparseArray;
@@ -34,6 +36,9 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+
 
 /**
  * https://github.com/CymChad/BaseRecyclerViewAdapterHelper
@@ -45,6 +50,17 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      */
     private final SparseArray<View> views;
 
+    public HashSet<Integer> getNestViews() {
+        return nestViews;
+    }
+
+    private final HashSet<Integer> nestViews;
+
+    private final LinkedHashSet<Integer> childClickViewIds;
+
+    private final LinkedHashSet<Integer> itemChildLongClickViewIds;
+    private BaseQuickAdapter adapter;
+
 
     public View convertView;
 
@@ -54,11 +70,27 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
     Object associatedObject;
 
 
-    protected BaseViewHolder(View view) {
+    public BaseViewHolder(final View view) {
         super(view);
-        this.views = new SparseArray<View>();
+        this.views = new SparseArray<>();
+        this.childClickViewIds = new LinkedHashSet<>();
+        this.itemChildLongClickViewIds = new LinkedHashSet<>();
+        this.nestViews = new HashSet<>();
         convertView = view;
 
+
+    }
+
+    private int getClickPosition() {
+        return getLayoutPosition() - adapter.getHeaderLayoutCount();
+    }
+
+    public HashSet<Integer> getItemChildLongClickViewIds() {
+        return itemChildLongClickViewIds;
+    }
+
+    public HashSet<Integer> getChildClickViewIds() {
+        return childClickViewIds;
     }
 
     public View getConvertView() {
@@ -79,6 +111,12 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
         return this;
     }
 
+    public BaseViewHolder setText(int viewId, @StringRes int strId) {
+        TextView view = getView(viewId);
+        view.setText(strId);
+        return this;
+    }
+
     /**
      * Will set the image of an ImageView from a resource id.
      *
@@ -86,7 +124,7 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param imageResId The image resource id.
      * @return The BaseViewHolder for chaining.
      */
-    public BaseViewHolder setImageResource(int viewId, int imageResId) {
+    public BaseViewHolder setImageResource(int viewId, @DrawableRes int imageResId) {
         ImageView view = getView(viewId);
         view.setImageResource(imageResId);
         return this;
@@ -112,7 +150,7 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param backgroundRes A resource to use as a background.
      * @return The BaseViewHolder for chaining.
      */
-    public BaseViewHolder setBackgroundRes(int viewId, int backgroundRes) {
+    public BaseViewHolder setBackgroundRes(int viewId, @DrawableRes int backgroundRes) {
         View view = getView(viewId);
         view.setBackgroundResource(backgroundRes);
         return this;
@@ -294,31 +332,87 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param listener The on click listener;
      * @return The BaseViewHolder for chaining.
      */
+    @Deprecated
     public BaseViewHolder setOnClickListener(int viewId, View.OnClickListener listener) {
         View view = getView(viewId);
         view.setOnClickListener(listener);
         return this;
     }
 
-    public BaseViewHolder setOnClickListener(int viewId, BaseQuickAdapter.OnItemChildClickListener listener) {
-        View view = getView(viewId);
-        listener.mViewHolder = this;
-        view.setOnClickListener(listener);
+    /**
+     * add childView id
+     *
+     * @param viewId add the child view id   can support childview click
+     * @return if you use adapter bind listener
+     * @link {(adapter.setOnItemChildClickListener(listener))}
+     * <p>
+     * or if you can use  recyclerView.addOnItemTouch(listerer)  wo also support this menthod
+     */
+    @SuppressWarnings("unchecked")
+    public BaseViewHolder addOnClickListener(final int viewId) {
+        childClickViewIds.add(viewId);
+        final View view = getView(viewId);
+        if (view != null) {
+            if (!view.isClickable()) {
+                view.setClickable(true);
+            }
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (adapter.getOnItemChildClickListener() != null) {
+                        adapter.getOnItemChildClickListener().onItemChildClick(adapter, v, getClickPosition());
+                    }
+                }
+            });
+        }
+
+        return this;
+    }
+
+
+    /**
+     * set nestview id
+     *
+     * @param viewId add the child view id   can support childview click
+     * @return
+     */
+    public BaseViewHolder setNestView(int viewId) {
+        addOnClickListener(viewId);
+        addOnLongClickListener(viewId);
+        nestViews.add(viewId);
         return this;
     }
 
     /**
-     * Sets the on longClick listener of the view.
+     * add long click view id
+     *
      * @param viewId
-     * @param listener
-     * @return
+     * @return if you use adapter bind listener
+     * @link {(adapter.setOnItemChildLongClickListener(listener))}
+     * <p>
+     * or if you can use  recyclerView.addOnItemTouch(listerer)  wo also support this menthod
      */
-    public BaseViewHolder setOnLongClickListener(int viewId, BaseQuickAdapter.OnItemChildLongClickListener listener) {
-        View view = getView(viewId);
-        listener.mViewHolder = this;
-        view.setOnLongClickListener(listener);
+    @SuppressWarnings("unchecked")
+    public BaseViewHolder addOnLongClickListener(final int viewId) {
+        itemChildLongClickViewIds.add(viewId);
+        final View view = getView(viewId);
+        if (view != null) {
+            if (!view.isLongClickable()) {
+                view.setLongClickable(true);
+            }
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (adapter.getOnItemChildLongClickListener() != null) {
+                        return adapter.getOnItemChildLongClickListener().onItemChildLongClick(adapter, v, getClickPosition());
+                    }
+                    return false;
+                }
+            });
+        }
         return this;
     }
+
 
     /**
      * Sets the on touch listener of the view.
@@ -327,6 +421,7 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param listener The on touch listener;
      * @return The BaseViewHolder for chaining.
      */
+    @Deprecated
     public BaseViewHolder setOnTouchListener(int viewId, View.OnTouchListener listener) {
         View view = getView(viewId);
         view.setOnTouchListener(listener);
@@ -339,7 +434,9 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param viewId   The view id.
      * @param listener The on long click listener;
      * @return The BaseViewHolder for chaining.
+     * Please use {@link #addOnLongClickListener(int)} (adapter.setOnItemChildLongClickListener(listener))}
      */
+    @Deprecated
     public BaseViewHolder setOnLongClickListener(int viewId, View.OnLongClickListener listener) {
         View view = getView(viewId);
         view.setOnLongClickListener(listener);
@@ -352,7 +449,9 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
      * @param viewId   The view id.
      * @param listener The item on click listener;
      * @return The BaseViewHolder for chaining.
+     * Please use {@link #addOnClickListener(int)} (int)} (adapter.setOnItemChildClickListener(listener))}
      */
+    @Deprecated
     public BaseViewHolder setOnItemClickListener(int viewId, AdapterView.OnItemClickListener listener) {
         AdapterView view = getView(viewId);
         view.setOnItemClickListener(listener);
@@ -456,6 +555,17 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
         return this;
     }
 
+    /**
+     * Sets the adapter of a adapter view.
+     *
+     * @param adapter The adapter;
+     * @return The BaseViewHolder for chaining.
+     */
+    protected BaseViewHolder setAdapter(BaseQuickAdapter adapter) {
+        this.adapter = adapter;
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends View> T getView(int viewId) {
         View view = views.get(viewId);
@@ -465,7 +575,6 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
         }
         return (T) view;
     }
-
 
     /**
      * Retrieves the last converted object on this view.
