@@ -1,6 +1,5 @@
 package com.chad.library.adapter.base;
 
-import android.support.annotation.LayoutRes;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
@@ -11,14 +10,12 @@ import java.util.List;
 /**
  * https://github.com/CymChad/BaseRecyclerViewAdapterHelper
  */
-public abstract class BaseMultiItemQuickAdapter<T extends MultiItemEntity, K extends BaseViewHolder> extends BaseQuickAdapter<T, K> {
+public abstract class BaseMultiItemQuickAdapter<T extends MultiItemEntity> extends BaseQuickAdapter {
 
     /**
      * layouts indexed with their types
      */
     private SparseArray<Integer> layouts;
-
-    private static final int DEFAULT_VIEW_TYPE = -0xff;
 
     /**
      * Same as QuickAdapter#QuickAdapter(Context,int) but with
@@ -32,19 +29,12 @@ public abstract class BaseMultiItemQuickAdapter<T extends MultiItemEntity, K ext
 
     @Override
     protected int getDefItemViewType(int position) {
-        Object item = mData.get(position);
-        if (item instanceof MultiItemEntity) {
-            return ((MultiItemEntity)item).getItemType();
-        }
-        return DEFAULT_VIEW_TYPE;
+        return ((MultiItemEntity) mData.get(position)).getItemType();
     }
 
-    protected void setDefaultViewTypeLayout(@LayoutRes int layoutResId) {
-        addItemType(DEFAULT_VIEW_TYPE, layoutResId);
-    }
 
     @Override
-    protected K onCreateDefViewHolder(ViewGroup parent, int viewType) {
+    protected BaseViewHolder onCreateDefViewHolder(ViewGroup parent, int viewType) {
         return createBaseViewHolder(parent, getLayoutId(viewType));
     }
 
@@ -52,12 +42,20 @@ public abstract class BaseMultiItemQuickAdapter<T extends MultiItemEntity, K ext
         return layouts.get(viewType);
     }
 
-    protected void addItemType(int type, @LayoutRes int layoutResId) {
+    protected void addItemType(int type, int layoutResId) {
         if (layouts == null) {
             layouts = new SparseArray<>();
         }
         layouts.put(type, layoutResId);
     }
+
+
+    @Override
+    protected void convert(BaseViewHolder helper, Object item) {
+        convert(helper, (T) item);
+    }
+
+    protected abstract void convert(BaseViewHolder helper, T item);
 
 
 }

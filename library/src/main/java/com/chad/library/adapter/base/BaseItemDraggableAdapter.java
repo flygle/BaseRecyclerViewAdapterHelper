@@ -19,22 +19,27 @@ import java.util.List;
 /**
  * Created by luoxw on 2016/7/13.
  */
-public abstract class BaseItemDraggableAdapter<T, K extends BaseViewHolder> extends BaseQuickAdapter<T, K> {
+public abstract class BaseItemDraggableAdapter<T> extends BaseQuickAdapter<T> {
 
     private static final int NO_TOGGLE_VIEW = 0;
-    protected int mToggleViewId = NO_TOGGLE_VIEW;
-    protected ItemTouchHelper mItemTouchHelper;
-    protected boolean itemDragEnabled = false;
-    protected boolean itemSwipeEnabled = false;
-    protected OnItemDragListener mOnItemDragListener;
-    protected OnItemSwipeListener mOnItemSwipeListener;
-    protected boolean mDragOnLongPress = true;
+    private int mToggleViewId = NO_TOGGLE_VIEW;
+    private ItemTouchHelper mItemTouchHelper;
+    private boolean itemDragEnabled = false;
+    private boolean itemSwipeEnabled = false;
+    private OnItemDragListener mOnItemDragListener;
+    private OnItemSwipeListener mOnItemSwipeListener;
+    private boolean mDragOnLongPress = true;
 
-    protected View.OnTouchListener mOnToggleViewTouchListener;
-    protected View.OnLongClickListener mOnToggleViewLongClickListener;
+    private View.OnTouchListener mOnToggleViewTouchListener;
+    private View.OnLongClickListener mOnToggleViewLongClickListener;
 
     private static final String ERROR_NOT_SAME_ITEMTOUCHHELPER = "Item drag and item swipe should pass the same ItemTouchHelper";
 
+
+
+    public BaseItemDraggableAdapter(View contentView, List<T> data) {
+        super(contentView, data);
+    }
 
     public BaseItemDraggableAdapter(List<T> data) {
         super(data);
@@ -53,7 +58,7 @@ public abstract class BaseItemDraggableAdapter<T, K extends BaseViewHolder> exte
      * @see #getDefItemViewType(int)
      */
     @Override
-    public void onBindViewHolder(K holder, int positions) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int positions) {
         super.onBindViewHolder(holder, positions);
         int viewType = holder.getItemViewType();
 

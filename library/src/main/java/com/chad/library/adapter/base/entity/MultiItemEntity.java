@@ -1,10 +1,18 @@
 package com.chad.library.adapter.base.entity;
 
+import java.io.Serializable;
+
 /**
  * https://github.com/CymChad/BaseRecyclerViewAdapterHelper
  */
-public interface MultiItemEntity {
+public abstract class MultiItemEntity implements Serializable{
+    protected int itemType;
 
-    int getItemType();
+    public int getItemType() {
+        return itemType;
+    }
 
+    public void setItemType(int itemType) {
+        this.itemType = itemType;
+    }
 }

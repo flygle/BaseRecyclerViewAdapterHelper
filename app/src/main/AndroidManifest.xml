@@ -5,34 +5,30 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/logo"
         android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".PullToRefreshUseActivity"/>
-        <activity android:name=".WelcomeActivity"
-            >
+        android:supportsRtl="true">
+        <activity android:name=".PullToRefreshUseActivity">
+        </activity>
+        <activity android:name=".HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".AnimationUseActivity"/>
-        <activity android:name=".HeaderAndFooterUseActivity"/>
-        <activity android:name=".SectionUseActivity"/>
-        <activity android:name=".MultipleItemUseActivity"/>
-        <activity android:name=".EmptyViewUseActivity"/>
-        <activity android:name=".ItemDragAndSwipeUseActivity"/>
-        <activity android:name=".ExpandableUseActivity"/>
-        <activity android:name=".DataBindingUseActivity"/>
-        <activity android:name=".ItemClickActivity">
+        <activity android:name=".AnimationUseActivity">
         </activity>
-        <activity android:name=".base.BaseActivity">
+        <activity android:name=".HeaderAndFooterUseActivity">
         </activity>
-        <activity android:name=".HomeActivity" android:launchMode="singleTask">
+        <activity android:name=".SectionUseActivity">
+        </activity>
+        <activity android:name=".MultipleItemUseActivity">
+        </activity>
+        <activity android:name=".EmptyViewUseActivity">
+        </activity>
+        <activity android:name=".ItemDragAndSwipeUseActivity">
         </activity>
     </application>
 

@@ -6,14 +6,14 @@ package com.chad.baserecyclerviewadapterhelper.entity;
 public class HomeItem {
     private String title;
     private Class<?> activity;
-    private int imageResource;
+    private String colorStr;
 
-    public int getImageResource() {
-        return imageResource;
+    public String getColorStr() {
+        return colorStr;
     }
 
-    public void setImageResource(int imageResource) {
-        this.imageResource = imageResource;
+    public void setColorStr(String colorStr) {
+        this.colorStr = colorStr;
     }
 
     public String getTitle() {

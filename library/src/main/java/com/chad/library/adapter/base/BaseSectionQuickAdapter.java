@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * https://github.com/CymChad/BaseRecyclerViewAdapterHelper
  */
-public abstract class BaseSectionQuickAdapter<T extends SectionEntity, K extends BaseViewHolder> extends BaseQuickAdapter<T, K> {
+public abstract class BaseSectionQuickAdapter<T extends SectionEntity> extends BaseQuickAdapter {
 
 
     protected int mSectionHeadResId;
@@ -30,30 +30,37 @@ public abstract class BaseSectionQuickAdapter<T extends SectionEntity, K extends
 
     @Override
     protected int getDefItemViewType(int position) {
-        return  mData.get(position).isHeader ? SECTION_HEADER_VIEW : 0;
+        return ((SectionEntity) mData.get(position)).isHeader ? SECTION_HEADER_VIEW : 0;
     }
 
     @Override
-    protected K onCreateDefViewHolder(ViewGroup parent, int viewType) {
+    protected BaseViewHolder onCreateDefViewHolder(ViewGroup parent, int viewType) {
         if (viewType == SECTION_HEADER_VIEW)
-            return createBaseViewHolder(getItemView(mSectionHeadResId, parent));
+            return new BaseViewHolder(getItemView(mSectionHeadResId, parent));
 
         return super.onCreateDefViewHolder(parent, viewType);
     }
 
+    /**
+     * @param holder A fully initialized helper.
+     * @param item   The item that needs to be displayed.
+     */
     @Override
-    public void onBindViewHolder(K holder, int positions) {
+    protected void convert(BaseViewHolder holder, Object item) {
         switch (holder.getItemViewType()) {
             case SECTION_HEADER_VIEW:
                 setFullSpan(holder);
-                convertHead(holder, mData.get(holder.getLayoutPosition() - getHeaderLayoutCount()));
+                convertHead(holder, (T) item);
                 break;
             default:
-                super.onBindViewHolder(holder, positions);
+                convert(holder, (T) item);
                 break;
         }
     }
 
-    protected abstract void convertHead(K helper, T item);
+    protected abstract void convertHead(BaseViewHolder helper, T item);
+
+    protected abstract void convert(BaseViewHolder helper, T item);
+
 
 }
